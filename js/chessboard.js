@@ -2,11 +2,7 @@ var board = null;
 var game = new Chess();
 
 function onDragStart (source, piece, position, orientation) {
-  if (game.game_over()) return false
-  if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-    return false;
-  }
+    if (game.game_over()) return false
 }
 
 function onDrop (source, target) {
@@ -14,13 +10,13 @@ function onDrop (source, target) {
         from: source,
         to: target,
         promotion: 'q'
-    })
-
+    }); window.fics.sendCommand(source + target);
     if (move === null) return 'snapback';
 }
 
 function onSnapEnd () {
-  board.position(game.fen());
+    board.position(game.fen(), false);
+    window.fics.sendCommand("time");
 }
 
 var config = {
@@ -28,7 +24,12 @@ var config = {
     position: 'start',
     onDragStart: onDragStart,
     onDrop: onDrop,
-    onSnapEnd: onSnapEnd
+    onSnapEnd: onSnapEnd,
+    /*appearSpeed: "fast",
+    moveSpeed: "fast",
+    snapbackSpeed: "fast",
+    snapSpeed: "fast",
+    trashSpeed: "fast"*/
 };
 
 board = Chessboard('chessboard', config);
