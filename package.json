@@ -1,0 +1,6 @@
+{
+    "name": "FICS Client",
+    "main": "main.js",
+    "scripts": { "start": "electron ." },
+    "dependencies": { "electron": "^33.0.1" }
+}
