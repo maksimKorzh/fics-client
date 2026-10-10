@@ -18,6 +18,7 @@ works during the game, otherwise you'll get an error.
     
     finger user_name           // See user info and rating
     seek 10 0                  // Seek for a blitz game 10 min 0 inc
+    time                       // Inspect how much time left
 
     draw                       // Offer a draw
     resign                     // Resign the game
