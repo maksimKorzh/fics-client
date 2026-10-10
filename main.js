@@ -5,10 +5,10 @@ let client;
 
 function createWindow() {
     const win = new BrowserWindow({
-        fullscreen: true,
-        width: 1720,
-        minWidth:1720,
-        height: 1000,
+        fullscreen: false,
+        width: 1024,
+        minWidth:1024,
+        height: 518,
         webPreferences: { preload: __dirname + '/preload.js' }
     }); const template = [
         {
@@ -25,8 +25,8 @@ function createWindow() {
     win.loadFile('ui.html');
     win.on('close', () => {
         if (client) {
-            client.end();  // Send FIN to server, graceful close
-            client.destroy();  // Force close in case end doesn't work
+            client.end();
+            client.destroy();
             client = null;
         }
     });

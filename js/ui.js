@@ -1,12 +1,22 @@
 window.fics.connect();
 
-var userName = "";
-let playerColor = null;
-let boardFlipped = false;
-let lastFen = null;
+let userName = "";
 
 const output = document.getElementById('output');
 const input = document.getElementById('input');
+
+var board = null;
+
+function onDrop(source, target) { window.fics.sendCommand(source + target); }
+
+var config = {
+    draggable: true,
+    position: 'start',
+    onDrop: onDrop
+};
+
+board = Chessboard('chessboard', config);
+window.addEventListener("resize", () => { board.resize(); });
 
 function style12ToFEN(input) {  // use command: set style 12
     const fields = input.trim().split(/\s+/);
@@ -44,36 +54,6 @@ function style12ToFEN(input) {  // use command: set style 12
     } return `${fenBoard} ${sideToMove} ${castling} ${enPassant} ${halfmoveClock} ${fullmoveNumber}`;
 }
 
-// Starting FICS session as
-// <12> rnbqkbnr pppppppp -------- -------- -------- -------- PPPPPPPP RNBQKBNR W -1 1 1 1 1 0 15 GuestDSDZ GuestWWCD -1 10 0 39 39 600 600 1 none (0:00) none 1 0 0
-// fics% Game 15: GuestDSDZ (++++) GuestWWCD (++++) unrated blitz 10 0
-
-/*window.fics.onData((data) => {
-    output.textContent += data;
-    output.scrollTop = output.scrollHeight;
-    if (data.includes("<12>")) {
-        const input = data.split("\u0007\n");
-        const position = input.find(i => i.trimStart().startsWith("<12>"));
-        if (position) {
-            let fen = style12ToFEN(position.trim());
-            
-
-            const [, white, black] = input.match(/Game \d+:\s+(\S+)\s+\([^)]*\)\s+(\S+)\s+\([^)]*\)/) || [];
-            const color = userName === white ? "white"
-                        : userName === black ? "black"
-                        : "unknown";
-            console.log(color);
-            
-            board.position(fen, false);
-            window.fics.sendCommand("time");
-        }
-    } else if (data.includes("Starting FICS session as ")) {
-        window.fics.sendCommand("set style 12");
-        userName = data.split("Starting FICS session as ")[1];
-        console.log("logged in as", userName);
-    }
-});*/
-
 window.fics.onData((data) => {
     output.textContent += data;
     output.scrollTop = output.scrollHeight;
@@ -84,59 +64,22 @@ window.fics.onData((data) => {
             .trim()
             .split(/\s/)[0]
             .split("(U)")[0];
-
-        console.log("logged in as", userName);
         window.fics.sendCommand("set style 12");
         return;
     }
 
-    // Determine the player's color from the game announcement.
-    const gameMatch = data.match(
-        /Game \d+:\s+(\S+)\s+\([^)]*\)\s+(\S+)\s+\([^)]*\)/
-    );
-
-    if (gameMatch && userName) {
-        const [, white, black] = gameMatch;
-
-        playerColor =
-            userName === white ? "white" :
-            userName === black ? "black" :
-            null;
-
-        if (playerColor && !boardFlipped) {
-            if (playerColor === "black") {
-                board.flip();
-            }
-            boardFlipped = true;
-        }
-    }
-
     if (data.includes("<12>")) {
         const input = data.split("\u0007\n");
-        const position = input.find(
-            i => i.trimStart().startsWith("<12>")
-        );
-
+        const position = input.find( i => i.trimStart().startsWith("<12>"));
         if (!position) return;
-
-        const fields = position.trim().split(/\s+/);
-        const sideToMove = fields[9]; // W or B
-
-        // Only update the board when it's the opponent's turn.
-        if (
-            playerColor &&
-            sideToMove &&
-            sideToMove.toLowerCase() !== playerColor[0]
-        ) {
-            const fen = style12ToFEN(position.trim());
-
-            if (fen !== lastFen) {
-                board.position(fen, false);
-                lastFen = fen;
-            }
-        }
-
-        window.fics.sendCommand("time");
+        const fen = style12ToFEN(position.trim());
+        board.position(fen, false);
+    }
+    
+    if (data.includes(userName)) {
+        if (data.includes("Illegal move") || !data.includes("<12>")) return;
+        if (data.indexOf(userName) < 100) board.orientation("white");
+        else board.orientation("black");
     }
 });
 
