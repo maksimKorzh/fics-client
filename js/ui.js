@@ -74,6 +74,18 @@ window.fics.onData((data) => {
         if (!position) return;
         const fen = style12ToFEN(position.trim());
         board.position(fen, false);
+        requestAnimationFrame(() => {
+            let hl = data.split(")")[1].trim().split(" ")[0].replace("+", "").slice(-2);
+            if (data.includes("O-O-O")) {
+                if (fen.includes(" w ")) hl = "c8";
+                else if (fen.includes(" b ")) hl = "c1";
+            } else if (data.includes("O-O")) {
+                if (fen.includes(" w ")) hl = "g8";
+                else if (fen.includes(" b ")) hl = "g1";
+            }
+            $("#chessboard").find('.square-55d63').removeClass('highlight');
+            $("#chessboard").find('.square-' + hl).addClass('highlight');
+        });
     }
     
     if (data.includes(userName)) {
