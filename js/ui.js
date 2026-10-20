@@ -31,11 +31,10 @@ function uClick(sq) {
 };
 
 var config = {
-    draggable: false,
-    position: 'start',
-};
-
-board = Chessboard('chessboard', config);
+    draggable: true,
+    position: "start",
+    onDrop: function (src, dst) { window.fics.sendCommand(src + dst); }
+}; board = Chessboard('chessboard', config);
 
 window.addEventListener("resize", () => { board.resize(); activate(); });
 
@@ -121,12 +120,29 @@ window.fics.onData((data) => {
     activate();
 });
 
-input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
         const cmd = input.value;
+        if (cmd == "click") {
+            var config = {
+                draggable: false,
+                position: "start",
+            }; board = Chessboard('chessboard', config);
+            input.value = ""; activate(); window.fics.sendCommand("refresh"); return;
+        } else if (cmd == "drag") {
+            var config = {
+                draggable: true,
+                position: "start",
+                onDrop: function (src, dst) {
+                    lock = 0; if (src != dst)
+                    window.fics.sendCommand(src + dst);
+                }
+            }; board = Chessboard('chessboard', config);
+            input.value = ""; window.fics.sendCommand("refresh"); return;
+        }
         window.fics.sendCommand(cmd);
-        input.value = '';
-        let terminal = document.getElementById('output');
+        input.value = "";
+        let terminal = document.getElementById("output");
         terminal.scrollTop = terminal.scrollHeight;
     }
 });
