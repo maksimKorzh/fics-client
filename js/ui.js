@@ -5,18 +5,39 @@ let userName = "";
 const output = document.getElementById('output');
 const input = document.getElementById('input');
 
-var board = null;
+var board = null, lock = 0, src = "", dst = "";
 
-function onDrop(source, target) { window.fics.sendCommand(source + target); }
+function activate() {
+    let squares = document.getElementsByClassName("square-55d63");
+    for (let i = 0; i < 64; i++) {
+        let square = squares[i];
+        square.onclick = function() { uClick(this.id); };
+    }
+}
+
+function uClick(sq) {
+    sq = sq.split("-")[0];
+    if (!lock) { src = sq; lock = 1; } else {
+        dst = sq;
+        window.fics.sendCommand(src + dst);
+        lock = 0;
+    } let squares = document.getElementsByClassName("square-55d63");
+    for (let i = 0; i < 64; i++)  {
+        let square = squares[i];
+        let current = square.id.split("-")[0];;
+        if (current == src) square.classList.add("highlight");
+        else square.classList.remove("highlight");
+    }
+};
 
 var config = {
-    draggable: true,
+    draggable: false,
     position: 'start',
-    onDrop: onDrop
 };
 
 board = Chessboard('chessboard', config);
-window.addEventListener("resize", () => { board.resize(); });
+
+window.addEventListener("resize", () => { board.resize(); activate(); });
 
 function style12ToFEN(input) {  // use command: set style 12
     const fields = input.trim().split(/\s+/);
@@ -86,6 +107,9 @@ window.fics.onData((data) => {
             $("#chessboard").find('.square-55d63').removeClass('highlight');
             $("#chessboard").find('.square-' + hl).addClass('highlight');
         });
+        
+        
+
     }
     
     if (data.includes(userName)) {
@@ -93,6 +117,8 @@ window.fics.onData((data) => {
         if (data.indexOf(userName) < 100) board.orientation("white");
         else board.orientation("black");
     }
+    
+    activate();
 });
 
 input.addEventListener('keydown', (e) => {
