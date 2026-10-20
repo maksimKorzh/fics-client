@@ -33,7 +33,9 @@ function uClick(sq) {
 var config = {
     draggable: true,
     position: "start",
-    onDrop: function (src, dst) { window.fics.sendCommand(src + dst); }
+    onDrop: function (src, dst) {
+        if (src != dst) window.fics.sendCommand(src + dst);
+    }
 }; board = Chessboard('chessboard', config);
 
 window.addEventListener("resize", () => { board.resize(); activate(); });
